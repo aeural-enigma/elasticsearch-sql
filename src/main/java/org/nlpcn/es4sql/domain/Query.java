@@ -37,7 +37,13 @@ public abstract class Query {
 		}
 		return indexArr;
 	}
-
+	public String[] getParentIdArr() {
+		String[] parentIdArr = new String[this.from.size()];
+		for (int i = 0; i < parentIdArr.length; i++) {
+			parentIdArr[i] = this.from.get(i).getParentId();
+		}
+		return parentIdArr;
+	}
 	/**
 	 * Get the types the query refer to.
 	 * @return list of strings, the types names
