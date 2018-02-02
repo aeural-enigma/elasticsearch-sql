@@ -9,6 +9,9 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.HasParentQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.search.aggregations.AbstractAggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
@@ -23,6 +26,7 @@ import org.nlpcn.es4sql.domain.MethodField;
 import org.nlpcn.es4sql.domain.Order;
 import org.nlpcn.es4sql.domain.Select;
 import org.nlpcn.es4sql.domain.Where;
+import org.nlpcn.es4sql.domain.From;
 import org.nlpcn.es4sql.domain.hints.Hint;
 import org.nlpcn.es4sql.domain.hints.HintType;
 import org.nlpcn.es4sql.exception.SqlParseException;
@@ -183,7 +187,7 @@ public class AggregationQueryAction extends QueryAction {
         SqlElasticSearchRequestBuilder sqlElasticRequestBuilder = new SqlElasticSearchRequestBuilder(request);
         return sqlElasticRequestBuilder;
     }
-    
+
     private AggregationBuilder getGroupAgg(Field field, Select select2) throws SqlParseException {
         boolean refrence = false;
         AggregationBuilder lastAgg = null;
@@ -201,7 +205,7 @@ public class AggregationQueryAction extends QueryAction {
         }
 
         if (!refrence) lastAgg = aggMaker.makeGroupAgg(field);
-        
+
         return lastAgg;
     }
 
@@ -348,9 +352,17 @@ public class AggregationQueryAction extends QueryAction {
      * @throws SqlParseException
      */
     private void setWhere(Where where) throws SqlParseException {
+        QueryBuilder qb = null;
+        for(From from : this.query.getFrom()){
+    			qb = new HasParentQueryBuilder("dataset", new TermQueryBuilder("_id", from.getParentId()), false);
+    		}
         if (where != null) {
-            QueryBuilder whereQuery = QueryMaker.explan(where,this.select.isQuery);
+            BoolQueryBuilder whereQuery = QueryMaker.explan(where,this.select.isQuery);
+            whereQuery.filter(qb);
             request.setQuery(whereQuery);
+        }
+        else{
+          request.setQuery(qb);
         }
     }
 

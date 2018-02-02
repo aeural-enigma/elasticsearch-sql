@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * 将sql语句转换为select 对象
- * 
+ *
  * @author ansj
  */
 public class Select extends Query {
@@ -22,7 +22,7 @@ public class Select extends Query {
 	private List<List<Field>> groupBys = new ArrayList<>();
 	private List<Order> orderBys = new ArrayList<>();
 	private int offset;
-	private int rowCount = 200;
+	private int rowCount = 10000;
     private boolean containsSubQueries;
     private List<SubQueryExpression> subQueries;
 	public boolean isQuery = false;
@@ -146,4 +146,3 @@ public class Select extends Query {
         return selectAll;
     }
 }
-

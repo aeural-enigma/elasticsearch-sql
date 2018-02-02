@@ -10,6 +10,7 @@ public class From {
 	private String index;
 	private String type;
     private String alias;
+		private String parentId;
 
 	/**
  	 * Extract index and type from the 'from' string
@@ -20,6 +21,9 @@ public class From {
 		this.index = parts[0].trim();
 		if (parts.length == 2) {
 			this.type = parts[1].trim();
+		}
+		if (parts.length == 3) {
+			this.parentId = parts[2].trim().replaceAll("_", "-").replaceAll("Y", "e");
 		}
 	}
 
@@ -51,4 +55,8 @@ public class From {
     public void setAlias(String alias) {
         this.alias = alias;
     }
+
+		public String getParentId(){
+			return this.parentId;
+		}
 }

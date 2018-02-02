@@ -8,6 +8,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.HasParentQueryBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
 import org.elasticsearch.script.ScriptType;
@@ -91,7 +94,7 @@ public class DefaultQueryAction extends QueryAction {
 
 	/**
 	 * Set source filtering on a search request.
-	 * 
+	 *
 	 * @param fields
 	 *            list of fields to source filter.
 	 */
@@ -136,21 +139,29 @@ public class DefaultQueryAction extends QueryAction {
 
 	/**
 	 * Create filters or queries based on the Where clause.
-	 * 
+	 *
 	 * @param where
 	 *            the 'WHERE' part of the SQL query.
 	 * @throws SqlParseException
 	 */
 	private void setWhere(Where where) throws SqlParseException {
+		QueryBuilder qb = null;
+		for(From from : this.query.getFrom()){
+			qb = new HasParentQueryBuilder("dataset", new TermQueryBuilder("_id", from.getParentId()), false);
+		}
 		if (where != null) {
 			BoolQueryBuilder boolQuery = QueryMaker.explan(where,this.select.isQuery);
+			boolQuery.filter(qb);
 			request.setQuery(boolQuery);
+		}
+		else{
+			request.setQuery(qb);
 		}
 	}
 
 	/**
 	 * Add sorts to the elasticsearch query based on the 'ORDER BY' clause.
-	 * 
+	 *
 	 * @param orderBys
 	 *            list of Order object
 	 */
@@ -162,7 +173,7 @@ public class DefaultQueryAction extends QueryAction {
 
 	/**
 	 * Add from and size to the ES query based on the 'LIMIT' clause
-	 * 
+	 *
 	 * @param from
 	 *            starts from document at position from
 	 * @param size
